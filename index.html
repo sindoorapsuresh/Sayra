@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAYRA 🎭 - Theatrical AI Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #1a1a1a 100%);
+        color: #f5f5f5;
+        font-family: 'Source Sans Pro', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+    }
+    
+    /* Elegant theatrical curtain effect */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            linear-gradient(90deg, rgba(139, 69, 19, 0.1) 0%, transparent 10%, transparent 90%, rgba(139, 69, 19, 0.1) 100%),
+            radial-gradient(circle at center, transparent 60%, rgba(212, 175, 55, 0.05) 100%);
+        z-index: -1;
+        pointer-events: none;
+    }
+    
+    .app-container {
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px;
+    }
+    
+    .title {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.2rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 8px;
+        letter-spacing: 3px;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        position: relative;
+    }
+    
+    .title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #d4af37, transparent);
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+        color: #c8c8c8;
+        font-weight: 300;
+        letter-spacing: 1px;
+        margin-top: 15px;
+        opacity: 0.9;
+    }
+    
+    .stage {
+        width: 100%;
+        max-width: 700px;
+        background: rgba(20, 20, 20, 0.9);
+        border-radius: 15px;
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .stage-header {
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(139, 69, 19, 0.2));
+        padding: 15px 25px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .stage-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        color: #d4af37;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #4ade80;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    #chat-box {
+        height: 400px;
+        padding: 25px;
+        overflow-y: auto;
+        background: rgba(10, 10, 10, 0.5);
+        position: relative;
+    }
+    
+    #chat-box::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #chat-box::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+    }
+    
+    #chat-box::-webkit-scrollbar-thumb {
+        background: rgba(212, 175, 55, 0.6);
+        border-radius: 3px;
+    }
+    
+    .msg {
+        margin: 20px 0;
+        padding: 16px 20px;
+        border-radius: 12px;
+        max-width: 80%;
+        font-size: 1rem;
+        line-height: 1.5;
+        animation: fadeInUp 0.4s ease-out;
+        position: relative;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .user {
+        background: linear-gradient(135deg, #8b5a3c, #a0522d);
+        color: #fff;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 12px rgba(139, 90, 60, 0.3);
+    }
+    
+    .user::before {
+        content: '👤';
+        position: absolute;
+        right: -30px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+    }
+    
+    .bot {
+        background: linear-gradient(135deg, #2d2d2d, #404040);
+        color: #f0f0f0;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+        border-left: 3px solid #d4af37;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .bot::before {
+        content: '🎭';
+        position: absolute;
+        left: -30px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.1rem;
+    }
+    
+    .controls {
+        padding: 20px 25px;
+        background: rgba(15, 15, 15, 0.8);
+        border-top: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    
+    .input-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+    
+    #user-input {
+        flex: 1;
+        padding: 16px 20px;
+        background: rgba(30, 30, 30, 0.8);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        border-radius: 25px;
+        color: #f5f5f5;
+        font-size: 1rem;
+        font-family: 'Source Sans Pro', sans-serif;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+    
+    #user-input:focus {
+        border-color: #d4af37;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        background: rgba(40, 40, 40, 0.9);
+    }
+    
+    #user-input::placeholder {
+        color: #888;
+        font-style: italic;
+    }
+    
+    #send-btn {
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #d4af37, #b8941f);
+        border: none;
+        border-radius: 25px;
+        color: #1a1a1a;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+    
+    #send-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+        background: linear-gradient(135deg, #e6c547, #d4af37);
+    }
+    
+    .voice-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .voice-btn {
+        padding: 8px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        background: rgba(30, 30, 30, 0.6);
+        color: #f5f5f5;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .voice-btn:hover {
+        border-color: #d4af37;
+        background: rgba(212, 175, 55, 0.1);
+    }
+    
+    #voice-toggle.enabled {
+        border-color: #10b981;
+        color: #10b981;
+    }
+    
+    #voice-toggle.disabled {
+        border-color: #6b7280;
+        color: #6b7280;
+    }
+    
+    #stop-voice {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+    
+    .voice-status {
+        text-align: center;
+        font-size: 0.8rem;
+        color: #999;
+        font-style: italic;
+    }
+    
+    .typing-indicator {
+        display: none;
+        padding: 12px 16px;
+        margin: 10px 0;
+        background: rgba(30, 30, 30, 0.6);
+        border-radius: 12px;
+        max-width: 60px;
+        border-left: 3px solid #d4af37;
+    }
+    
+    .typing-dots {
+        display: flex;
+        gap: 3px;
+    }
+    
+    .typing-dots span {
+        width: 5px;
+        height: 5px;
+        background: #d4af37;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+        40% { transform: scale(1); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+        .title { font-size: 2.5rem; letter-spacing: 2px; }
+        .stage { max-width: 95%; }
+        #chat-box { height: 350px; padding: 20px; }
+        .msg { max-width: 85%; }
+        .input-row { flex-direction: column; gap: 10px; }
+        #send-btn { align-self: stretch; justify-content: center; }
+    }
+</style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1 class="title">SAYRA</h1>
+            <p class="subtitle">Your Theatrical AI Companion</p>
+        </div>
+        
+        <div class="stage">
+            <div class="stage-header">
+                <div class="stage-title">
+                    <i class="fas fa-theater-masks"></i>
+                    Cinema Stage
+                </div>
+                <div class="status-dot"></div>
+            </div>
+            
+            <div id="chat-box">
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="input-row">
+                    <input type="text" id="user-input" placeholder="Ask me anything... I'll respond with cinematic wisdom 🎭" />
+                    <button id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Send
+                    </button>
+                </div>
+                
+                <div class="voice-row">
+                    <button id="voice-toggle" class="voice-btn enabled">
+                        <i class="fas fa-volume-up"></i>
+                        Voice ON
+                    </button>
+                    <button id="stop-voice" class="voice-btn">
+                        <i class="fas fa-stop"></i>
+                        Stop
+                    </button>
+                </div>
+                
+                <div class="voice-status" id="voice-status">
+                    🎭 SAYRA speaks with a theatrical female voice
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const voiceToggle = document.getElementById("voice-toggle");
+const stopVoice = document.getElementById("stop-voice");
+const voiceStatus = document.getElementById("voice-status");
+
+// Text-to-Speech setup
+let voiceEnabled = true;
+let currentUtterance = null;
+let femaleVoice = null;
+
+// Initialize speech synthesis
+function initializeVoice() {
+    if ('speechSynthesis' in window) {
+        const loadVoices = () => {
+            const voices = speechSynthesis.getVoices();
+            femaleVoice = voices.find(voice =>
+                voice.lang.startsWith('en') &&
+                (voice.name.toLowerCase().includes('female') ||
+                 voice.name.toLowerCase().includes('woman') ||
+                 voice.name.toLowerCase().includes('zira') ||
+                 voice.name.toLowerCase().includes('hazel') ||
+                 voice.name.toLowerCase().includes('samantha') ||
+                 voice.name.toLowerCase().includes('karen') ||
+                 voice.name.toLowerCase().includes('susan'))
+            ) || voices.find(voice =>
+                voice.lang.startsWith('en') && voice.gender === 'female'
+            ) || voices.find(voice =>
+                voice.lang.startsWith('en')
+            ) || voices[0];
+
+            if (femaleVoice) {
+                voiceStatus.textContent = `🎭 SAYRA speaks with: ${femaleVoice.name}`;
+            }
+        };
+
+        speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+    } else {
+        voiceStatus.textContent = "⚠️ Text-to-speech not supported";
+        voiceToggle.disabled = true;
+    }
+}
+
+function speakText(text) {
+    if (!voiceEnabled || !femaleVoice) return;
+
+    speechSynthesis.cancel();
+
+    let cleanText = text.replace(/—.*$/, '').trim();
+
+    currentUtterance = new SpeechSynthesisUtterance(cleanText);
+    currentUtterance.voice = femaleVoice;
+    currentUtterance.rate = 0.9;
+    currentUtterance.pitch = 1.1;
+    currentUtterance.volume = 0.8;
+
+    currentUtterance.onstart = () => {
+        voiceStatus.textContent = "🎭 SAYRA is performing...";
+    };
+
+    currentUtterance.onend = () => {
+        voiceStatus.textContent = `🎭 SAYRA speaks with: ${femaleVoice.name}`;
+        currentUtterance = null;
+    };
+
+    currentUtterance.onerror = () => {
+        voiceStatus.textContent = "❌ Performance interrupted";
+        currentUtterance = null;
+    };
+
+    speechSynthesis.speak(currentUtterance);
+}
+
+function addMessage(message, type) {
+    const div = document.createElement("div");
+    div.textContent = message;
+    div.classList.add("msg", type);
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    if (type === "bot" && voiceEnabled) {
+        speakText(message);
+    }
+}
+
+function showTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    typingIndicator.style.display = 'block';
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    typingIndicator.style.display = 'none';
+}
+
+// Voice control event listeners
+voiceToggle.addEventListener("click", () => {
+    voiceEnabled = !voiceEnabled;
+    if (voiceEnabled) {
+        voiceToggle.innerHTML = '<i class="fas fa-volume-up"></i> Voice ON';
+        voiceToggle.classList.remove("disabled");
+        voiceToggle.classList.add("enabled");
+        voiceStatus.textContent = `🎭 SAYRA speaks with: ${femaleVoice ? femaleVoice.name : 'default voice'}`;
+    } else {
+        voiceToggle.innerHTML = '<i class="fas fa-volume-mute"></i> Voice OFF';
+        voiceToggle.classList.add("disabled");
+        voiceToggle.classList.remove("enabled");
+        voiceStatus.textContent = "🔇 Voice disabled";
+        speechSynthesis.cancel();
+    }
+});
+
+stopVoice.addEventListener("click", () => {
+    speechSynthesis.cancel();
+    voiceStatus.textContent = "⏹️ Performance stopped";
+    setTimeout(() => {
+        if (voiceEnabled && femaleVoice) {
+            voiceStatus.textContent = `🎭 SAYRA speaks with: ${femaleVoice.name}`;
+        }
+    }, 2000);
+});
+
+sendBtn.addEventListener("click", () => {
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    speechSynthesis.cancel();
+
+    addMessage(message, "user");
+    userInput.value = "";
+
+    showTypingIndicator();
+
+    fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        hideTypingIndicator();
+        addMessage(data.reply, "bot");
+    })
+    .catch(err => {
+        hideTypingIndicator();
+        addMessage("The show must go on, but there seems to be a technical difficulty! 🎭", "bot");
+    });
+});
+
+userInput.addEventListener("keypress", e => {
+    if (e.key === "Enter") sendBtn.click();
+});
+
+// Initialize when page loads
+window.addEventListener("load", () => {
+    initializeVoice();
+    setTimeout(() => {
+        addMessage("🎭 Welcome to the theatrical stage! I'm SAYRA, your AI companion who speaks through the art of cinema. What story shall we tell today?", "bot");
+    }, 1000);
+});
+</script>
+</body>
+</html>
